@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>አዋዳ ግቢ ጉባኤ — አባላት ስርዓት</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Ethiopic:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-cross">✞</div>
+    <h1 class="login-title">አዋዳ ግቢ ጉባኤ</h1>
+    <p class="login-sub">Awada Campus Ministry — Hawassa University</p>
+    <p class="login-dept">አባላትና እንክብካቤ ክፍል</p>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="login-username" placeholder="username" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary full-width" id="login-btn">ግባ / Login</button>
+    <div class="form-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app-wrap" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="sidebar-cross">✞</span>
+      <span class="sidebar-name">አዋዳ ጉባኤ</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-link active" data-page="dashboard">
+        <span class="nav-icon">⊞</span><span class="nav-label" data-am="ዳሽቦርድ" data-en="Dashboard">ዳሽቦርድ</span>
+      </a>
+      <a class="nav-link" data-page="members">
+        <span class="nav-icon">👥</span><span class="nav-label" data-am="አባላት" data-en="Members">አባላት</span>
+      </a>
+      <a class="nav-link" data-page="add-member" id="nav-add" style="display:none;">
+        <span class="nav-icon">＋</span><span class="nav-label" data-am="አባል ጨምር" data-en="Add Member">አባል ጨምር</span>
+      </a>
+      <a class="nav-link" data-page="admins" id="nav-admins" style="display:none;">
+        <span class="nav-icon">🔑</span><span class="nav-label" data-am="አስተዳዳሪወች" data-en="Admins">አስተዳዳሪወች</span>
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="lang-toggle" id="lang-toggle">EN / አማ</button>
+      <div class="sidebar-user" id="sidebar-user"></div>
+      <button class="btn-logout" id="logout-btn">ወጣ</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page">
+      <div class="page-header">
+        <h2 class="page-title" data-am="ዳሽቦርድ" data-en="Dashboard">ዳሽቦርድ</h2>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3 data-am="በክፍል" data-en="By Department">በክፍል</h3>
+          <div id="dept-chart"></div>
+        </div>
+        <div class="chart-card">
+          <h3 data-am="በባች" data-en="By Batch">በባች</h3>
+          <div id="batch-chart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBERS LIST -->
+    <div id="page-members" class="page" style="display:none;">
+      <div class="page-header">
+        <h2 class="page-title" data-am="አባላት" data-en="Members">አባላት</h2>
+        <div class="header-actions">
+          <button class="btn-primary" id="export-btn" data-am="Excel ላክ" data-en="Export Excel">Excel ላክ</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <input type="search" id="search-input" placeholder="ስም ፈልግ / Search name..." class="search-box">
+        <select id="filter-status" class="filter-select">
+          <option value="">ሁሉም / All</option>
+          <option value="active">ንቁ / Active</option>
+          <option value="graduated">ተመርቀዋል / Graduated</option>
+        </select>
+        <select id="filter-dept" class="filter-select">
+          <option value="">ሁሉም ክፍሎች / All Depts</option>
+        </select>
+        <select id="filter-batch" class="filter-select">
+          <option value="">ሁሉም ባቾች / All Batches</option>
+        </select>
+      </div>
+      <div id="members-grid" class="members-grid"></div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- ADD / EDIT MEMBER FORM -->
+    <div id="page-add-member" class="page" style="display:none;">
+      <div class="page-header">
+        <h2 class="page-title" id="form-title" data-am="አባል ጨምር" data-en="Add Member">አባል ጨምር</h2>
+        <button class="btn-ghost" id="cancel-form-btn" data-am="ተወው" data-en="Cancel">ተወው</button>
+      </div>
+      <form id="member-form" class="member-form" enctype="multipart/form-data">
+        <input type="hidden" id="edit-member-id">
+
+        <!-- Photo -->
+        <div class="form-section">
+          <div class="photo-upload-area" id="photo-upload-area">
+            <img id="photo-preview" src="" alt="" style="display:none;">
+            <div id="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <div data-am="ፎቶ ጫን" data-en="Upload Photo">ፎቶ ጫን</div>
+            </div>
+            <input type="file" id="photo-input" accept="image/*" style="display:none;">
+          </div>
+        </div>
+
+        <!-- Section: Personal -->
+        <div class="form-section">
+          <div class="section-label" data-am="የግል መረጃ" data-en="Personal Info">የግል መረጃ</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label data-am="ማእረግ" data-en="Title">ማእረግ</label>
+              <select name="title" id="f-title">
+                <option value="">—</option>
+                <option value="ዲ/ን">ዲ/ን</option>
+                <option value="ቀሲስ">ቀሲስ</option>
+                <option value="ሠ/ዲ">ሠ/ዲ</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label data-am="ጾታ" data-en="Gender">ጾታ *</label>
+              <select name="gender" id="f-gender" required>
+                <option value="">—</option>
+                <option value="ወንድ">ወንድ</option>
+                <option value="ሴት">ሴት</option>
+              </select>
+            </div>
+            <div class="form-group span-2">
+              <label data-am="ስም" data-en="First Name">ስም *</label>
+              <input type="text" name="first_name" id="f-first_name" required>
+            </div>
+            <div class="form-group span-2">
+              <label data-am="የአባት ስም" data-en="Father's Name">የአባት ስም *</label>
+              <input type="text" name="father_name" id="f-father_name" required>
+            </div>
+            <div class="form-group span-2">
+              <label data-am="የአያት ስም" data-en="Grandfather's Name">የአያት ስም</label>
+              <input type="text" name="grandfather_name" id="f-grandfather_name">
+            </div>
+            <div class="form-group">
+              <label data-am="የትዉልድ ቀን" data-en="Date of Birth">የትዉልድ ቀን</label>
+              <input type="date" name="date_of_birth" id="f-date_of_birth">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Origin -->
+        <div class="form-section">
+          <div class="section-label" data-am="የትዉልድ ቦታ" data-en="Origin">የትዉልድ ቦታ</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label data-am="ክልል" data-en="Region">ክልል</label>
+              <input type="text" name="region" id="f-region">
+            </div>
+            <div class="form-group">
+              <label data-am="ዞን" data-en="Zone">ዞን</label>
+              <input type="text" name="zone" id="f-zone">
+            </div>
+            <div class="form-group">
+              <label data-am="ወረዳ" data-en="Woreda">ወረዳ</label>
+              <input type="text" name="woreda" id="f-woreda">
+            </div>
+            <div class="form-group">
+              <label data-am="ማእከል" data-en="Center">ማእከል</label>
+              <input type="text" name="center" id="f-center">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Spiritual -->
+        <div class="form-section">
+          <div class="section-label" data-am="መንፈሳዊ መረጃ" data-en="Spiritual Info">መንፈሳዊ መረጃ</div>
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label data-am="የክርስትና ስም" data-en="Baptism Name">የክርስትና ስም</label>
+              <input type="text" name="baptism_name" id="f-baptism_name">
+            </div>
+            <div class="form-group span-2">
+              <label data-am="የንስሐ አባት" data-en="Confession Father">የንስሐ አባት</label>
+              <input type="text" name="confession_father" id="f-confession_father">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: University -->
+        <div class="form-section">
+          <div class="section-label" data-am="የዩኒቨርሲቲ መረጃ" data-en="University Info">የዩኒቨርሲቲ መረጃ</div>
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label data-am="ዲፓርትመንት" data-en="Department">ዲፓርትመንት</label>
+              <input type="text" name="university_department" id="f-university_department">
+            </div>
+            <div class="form-group">
+              <label data-am="ባች" data-en="Batch">ባች</label>
+              <input type="text" name="batch" id="f-batch" placeholder="ለምሳሌ: 2017">
+            </div>
+            <div class="form-group">
+              <label data-am="ሴክሽን" data-en="Section">ሴክሽን</label>
+              <input type="text" name="section" id="f-section" placeholder="ለምሳሌ: A">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Contact -->
+        <div class="form-section">
+          <div class="section-label" data-am="ግንኙነት" data-en="Contact">ግንኙነት</div>
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label data-am="ስልክ ቁጥር" data-en="Phone">ስልክ ቁጥር</label>
+              <input type="tel" name="phone" id="f-phone">
+            </div>
+            <div class="form-group span-2">
+              <label data-am="ኢሜይል" data-en="Email">ኢሜይል</label>
+              <input type="email" name="email" id="f-email">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Gubae -->
+        <div class="form-section">
+          <div class="section-label" data-am="የጉባኤ አገልግሎት" data-en="Ministry Role">የጉባኤ አገልግሎት</div>
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label data-am="የሚያገለግሉበት ክፍል" data-en="Gubae Department">የሚያገለግሉበት ክፍል</label>
+              <select name="gubae_department" id="f-gubae_department">
+                <option value="">— የለም / None —</option>
+                <option value="ሰብሳቢ">ሰብሳቢ</option>
+                <option value="ምክትል ሰብሳቢ">ምክትል ሰብሳቢ</option>
+                <option value="ፀሀፊ">ፀሀፊ</option>
+                <option value="ሙያ እና በጎ አድራጎት">ሙያ እና በጎ አድራጎት</option>
+                <option value="ትምህርት እና ሐዋርያዊ አገልግሎት">ትምህርት እና ሐዋርያዊ አገልግሎት</option>
+                <option value="መዝሙር እና ኪነ ጥበብ">መዝሙር እና ኪነ ጥበብ</option>
+                <option value="አባላትና እንክብካቤ">አባላትና እንክብካቤ</option>
+                <option value="ቋንቋ እና ልዩ ድጋፍ">ቋንቋ እና ልዩ ድጋፍ</option>
+                <option value="ኦዲት እና ኢንስፔክሽን">ኦዲት እና ኢንስፔክሽን</option>
+                <option value="ባች እና መርሃግብር አስተባባሪ">ባች እና መርሃግብር አስተባባሪ</option>
+                <option value="ሒሳብ ክፍል">ሒሳብ ክፍል</option>
+                <option value="ገንዘብ ያዥ">ገንዘብ ያዥ</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label data-am="የተቀበሉበት ቀን" data-en="Joining Date">የተቀበሉበት ቀን</label>
+              <input type="date" name="joining_date" id="f-joining_date">
+            </div>
+            <div class="form-group">
+              <label data-am="ሁኔታ" data-en="Status">ሁኔታ</label>
+              <select name="status" id="f-status">
+                <option value="active">ንቁ / Active</option>
+                <option value="graduated">ተመርቀዋል / Graduated</option>
+              </select>
+            </div>
+            <div class="form-group span-2" id="graduation-year-row" style="display:none;">
+              <label data-am="የተመረቁበት ዓ.ም" data-en="Graduation Year">የተመረቁበት ዓ.ም</label>
+              <input type="text" name="graduation_year" id="f-graduation_year" placeholder="ለምሳሌ: 2016">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Notes -->
+        <div class="form-section">
+          <div class="section-label" data-am="ማሳሰቢያ" data-en="Notes">ማሳሰቢያ</div>
+          <div class="form-grid">
+            <div class="form-group span-4">
+              <textarea name="notes" id="f-notes" rows="3" placeholder="ተጨማሪ ማስታወሻ..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="save-btn" data-am="አስቀምጥ" data-en="Save">አስቀምጥ</button>
+          <div class="form-error" id="form-error"></div>
+        </div>
+      </form>
+    </div>
+
+    <!-- MEMBER DETAIL VIEW -->
+    <div id="page-member-detail" class="page" style="display:none;">
+      <div class="page-header">
+        <button class="btn-ghost" id="back-to-members">← <span data-am="ወደ ዝርዝር" data-en="Back to list">ወደ ዝርዝር</span></button>
+        <div class="header-actions" id="detail-actions"></div>
+      </div>
+      <div id="member-detail-content"></div>
+    </div>
+
+    <!-- ADMINS PAGE -->
+    <div id="page-admins" class="page" style="display:none;">
+      <div class="page-header">
+        <h2 class="page-title" data-am="አስተዳዳሪወች" data-en="Admins">አስተዳዳሪወች</h2>
+        <button class="btn-primary" id="show-add-admin">＋ <span data-am="አክል" data-en="Add">አክል</span></button>
+      </div>
+      <div id="add-admin-form" class="card" style="display:none; margin-bottom:24px;">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="admin-username">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="admin-password">
+          </div>
+          <div class="form-group">
+            <label data-am="ሚና" data-en="Role">ሚና</label>
+            <select id="admin-role">
+              <option value="admin">Admin</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-am="ሙሉ ስም" data-en="Full Name">ሙሉ ስም</label>
+            <input type="text" id="admin-fullname">
+          </div>
+        </div>
+        <button class="btn-primary" id="save-admin-btn" data-am="አስቀምጥ" data-en="Save">አስቀምጥ</button>
+        <div class="form-error" id="admin-error"></div>
+      </div>
+      <div id="admins-list"></div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

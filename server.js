@@ -260,8 +260,11 @@ app.post('/api/members/import', requireAuth(['super_admin', 'admin']), async (re
         m.baptism_name || null, m.confession_father || null,
         m.university_department || null, m.batch || null, m.section || null,
         m.email || null, m.phone || null,
-        m.gubae_department || null, m.joining_date || null,
-        m.status || 'active', m.graduation_year || null, m.notes || null,
+        m.gubae_department || null,
+        m.joining_date || null,
+        m.status || 'active',
+        m.graduation_year || null,
+        m.notes || null,
       ]);
       imported++;
     } catch (err) {

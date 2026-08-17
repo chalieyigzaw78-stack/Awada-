@@ -264,7 +264,7 @@ async function viewMember(id) {
             <div class="detail-field"><label>ክልል / Region</label><span>${f(m.region)}</span></div>
             <div class="detail-field"><label>ዞን / Zone</label><span>${f(m.zone)}</span></div>
             <div class="detail-field"><label>ወረዳ / Woreda</label><span>${f(m.woreda)}</span></div>
-            <div class="detail-field"><label>ማእከል / Center</label><span>${f(m.center)}</span></div>
+            <div class="detail-field"><label>ማዕከል / Center</label><span>${f(m.center)}</span></div>
           </div>
         </div>
 
@@ -351,19 +351,23 @@ async function editMember(id) {
       el.value = val;
     });
 
-    if (m.photo_url) {
-      const prev = document.getElementById('photo-preview');
-      prev.src = m.photo_url;
-      prev.style.display = 'block';
-      document.getElementById('photo-placeholder').style.display = 'none';
-    }
-
     document.getElementById('graduation-year-row').style.display =
       m.status === 'graduated' ? 'grid' : 'none';
 
     document.getElementById('form-error').textContent = '';
     showPage('add-member');
     applyLang();
+
+    // Set photo AFTER showPage so it isn't overridden by any display resets
+    if (m.photo_url) {
+      const prev = document.getElementById('photo-preview');
+      prev.src = m.photo_url;
+      prev.style.display = 'block';
+      document.getElementById('photo-placeholder').style.display = 'none';
+    } else {
+      document.getElementById('photo-preview').style.display = 'none';
+      document.getElementById('photo-placeholder').style.display = 'block';
+    }
   } catch (err) {
     showToast('Could not load member for editing', 'error');
   }
@@ -442,28 +446,28 @@ async function importFromExcel(file) {
 
         // Map column headers — supports both Amharic and English header names
         const members = rows.map(row => ({
-          title:                  row['ማእረግ']          || row['title']                  || '',
-          first_name:             row['ስም']             || row['first_name']             || '',
-          father_name:            row['የአባት ስም']        || row['father_name']            || '',
-          grandfather_name:       row['የአያት ስም']        || row['grandfather_name']        || '',
-          baptism_name:           row['የክርስትና ስም']      || row['baptism_name']           || '',
-          gender:                 row['ጾታ']             || row['gender']                 || '',
-          date_of_birth:          excelDateToString(row['የትዉልድ ቀን']  || row['date_of_birth']),
-          region:                 row['ክልል']            || row['region']                 || '',
-          zone:                   row['ዞን']             || row['zone']                   || '',
-          woreda:                 row['ወረዳ']            || row['woreda']                 || '',
-          center:                 row['ማእከል']           || row['center']                 || '',
-          university_department:  row['ዲፓርትመንት']       || row['university_department']  || '',
-          batch:           String(row['ባች']             || row['batch']                  || '').trim(),
-          section:                row['ሴክሽን']           || row['section']                || '',
-          phone:           String(row['ስልክ']            || row['phone']                  || '').trim(),
-          email:                  row['ኢሜይል']           || row['email']                  || '',
-          gubae_department:       row['የጉባኤ ክፍል']       || row['gubae_department']       || '',
+          title:                  row['ማእረግ']               || row['title']                 || '',
+          first_name:             row['ስም']                  || row['first_name']            || '',
+          father_name:            row['የአባት ስም']             || row['father_name']           || '',
+          grandfather_name:       row['የአያት ስም']             || row['grandfather_name']       || '',
+          baptism_name:           row['የክርስትና ስም']           || row['baptism_name']          || '',
+          gender:                 row['ጾታ']                  || row['gender']                || '',
+          date_of_birth:          excelDateToString(row['የትዉልድ ቀን'] || row['date_of_birth']),
+          region:                 row['የተወለዱበት ክልል']         || row['ክልል']                   || row['region']        || '',
+          zone:                   row['ዞን']                  || row['zone']                  || '',
+          woreda:                 row['ወረዳ']                 || row['woreda']                || '',
+          center:                 row['ማዕከል']               || row['ማእከል']                  || row['center']        || '',
+          university_department:  row['ዲፓርትመንት']            || row['university_department'] || '',
+          batch:           String(row['ባች']                  || row['batch']                 || '').trim(),
+          section:                row['ሴክሽን']               || row['section']               || '',
+          phone:           String(row['ስልክ']                 || row['ስልክ ቁጥር']              || row['phone']         || '').trim(),
+          email:                  row['ኢሜይል']               || row['email']                 || '',
+          gubae_department:       row['የጉባኤ ክፍል']           || row['gubae_department']      || '',
           joining_date:           excelDateToString(row['የተቀበሉበት ቀን'] || row['joining_date']),
           status:                 row['ሁኔታ'] === 'ተመርቀዋል' ? 'graduated' : (row['status'] || 'active'),
-          graduation_year: String(row['የተመረቁበት ዓ.ም']   || row['graduation_year']        || '').trim(),
-          confession_father:      row['የንስሐ አባት']       || row['confession_father']      || '',
-          notes:                  row['ማሳሰቢያ']          || row['notes']                  || '',
+          graduation_year: String(row['የተመረቁበት ዓ.ም']        || row['graduation_year']       || '').trim(),
+          confession_father:      row['የንስሐ አባት']            || row['confession_father']     || '',
+          notes:                  row['ማሳሰቢያ']              || row['notes']                 || '',
         })).filter(m => m.first_name && m.father_name);
 
         if (members.length === 0) {
@@ -516,7 +520,7 @@ async function exportToExcel() {
       'ክልል': m.region || '',
       'ዞን': m.zone || '',
       'ወረዳ': m.woreda || '',
-      'ማእከል': m.center || '',
+      'ማዕከል': m.center || '',
       'ዲፓርትመንት': m.university_department || '',
       'ባች': m.batch || '',
       'ሴክሽን': m.section || '',

@@ -408,6 +408,23 @@ async function deleteMember(id) {
 }
 
 // ── IMPORT FROM EXCEL ─────────────────────────────────────────────
+
+  // Excel stores dates as serial numbers (days since 1900-01-01).
+  // This converts them to YYYY-MM-DD strings that PostgreSQL accepts.
+  function excelDateToString(val) {
+    if (!val) return null;
+    if (typeof val === 'number') {
+      // Excel serial date → JS Date
+      const date = new Date(Math.round((val - 25569) * 86400 * 1000));
+      return date.toISOString().split('T')[0];
+    }
+    const str = String(val).trim();
+    if (!str) return null;
+    // Already a readable date string — try to parse it
+    const d = new Date(str);
+    if (!isNaN(d)) return d.toISOString().split('T')[0];
+    return null;
+  }
 async function importFromExcel(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -431,20 +448,20 @@ async function importFromExcel(file) {
           grandfather_name:       row['የአያት ስም']        || row['grandfather_name']        || '',
           baptism_name:           row['የክርስትና ስም']      || row['baptism_name']           || '',
           gender:                 row['ጾታ']             || row['gender']                 || '',
-          date_of_birth:          row['የትዉልድ ቀን']       || row['date_of_birth']          || '',
+          date_of_birth:          excelDateToString(row['የትዉልድ ቀን']  || row['date_of_birth']),
           region:                 row['ክልል']            || row['region']                 || '',
           zone:                   row['ዞን']             || row['zone']                   || '',
           woreda:                 row['ወረዳ']            || row['woreda']                 || '',
           center:                 row['ማእከል']           || row['center']                 || '',
           university_department:  row['ዲፓርትመንት']       || row['university_department']  || '',
-          batch:                  row['ባች']             || row['batch']                  || '',
+          batch:           String(row['ባች']             || row['batch']                  || '').trim(),
           section:                row['ሴክሽን']           || row['section']                || '',
-          phone:           String(row['ስልክ']            || row['phone']                  || ''),
+          phone:           String(row['ስልክ']            || row['phone']                  || '').trim(),
           email:                  row['ኢሜይል']           || row['email']                  || '',
           gubae_department:       row['የጉባኤ ክፍል']       || row['gubae_department']       || '',
-          joining_date:           row['የተቀበሉበት ቀን']     || row['joining_date']           || '',
+          joining_date:           excelDateToString(row['የተቀበሉበት ቀን'] || row['joining_date']),
           status:                 row['ሁኔታ'] === 'ተመርቀዋል' ? 'graduated' : (row['status'] || 'active'),
-          graduation_year: String(row['የተመረቁበት ዓ.ም']   || row['graduation_year']        || ''),
+          graduation_year: String(row['የተመረቁበት ዓ.ም']   || row['graduation_year']        || '').trim(),
           confession_father:      row['የንስሐ አባት']       || row['confession_father']      || '',
           notes:                  row['ማሳሰቢያ']          || row['notes']                  || '',
         })).filter(m => m.first_name && m.father_name);

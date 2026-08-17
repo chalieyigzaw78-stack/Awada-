@@ -129,8 +129,11 @@ app.get('/api/members/:id', requireAuth(), async (req, res) => {
 app.post('/api/members', requireAuth(['super_admin', 'admin']), upload.single('photo'), async (req, res) => {
   try {
     const f = req.body;
-    const photoUrl = req.file?.path || null;
-    const photoPublicId = req.file?.filename || null;
+    if (req.file) console.log('Uploaded file object:', JSON.stringify(req.file));
+    // multer-storage-cloudinary v4 may return the URL in different fields
+    // depending on the cloudinary SDK version — check all possibilities
+    const photoUrl = req.file?.secure_url || req.file?.path || req.file?.url || null;
+    const photoPublicId = req.file?.public_id || req.file?.filename || null;
 
     const result = await pool.query(`
       INSERT INTO members (
@@ -178,8 +181,8 @@ app.put('/api/members/:id', requireAuth(['super_admin', 'admin']), upload.single
       if (photoPublicId) {
         await cloudinary.uploader.destroy(photoPublicId).catch(() => {});
       }
-      photoUrl = req.file.path;
-      photoPublicId = req.file.filename;
+      photoUrl = req.file.secure_url || req.file.path || req.file.url || null;
+      photoPublicId = req.file.public_id || req.file.filename || null;
     }
 
     const result = await pool.query(`

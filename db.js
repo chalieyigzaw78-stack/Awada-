@@ -57,8 +57,8 @@ async function initDB() {
         notes TEXT,                                 -- ማሳሰቢያ
 
         -- Photo
-        photo_url VARCHAR(500),                     -- Cloudinary URL
-        photo_public_id VARCHAR(300),               -- Cloudinary public_id (for deletion)
+        photo_url TEXT,                             -- Cloudinary URL
+        photo_public_id TEXT,                       -- Cloudinary public_id (for deletion)
 
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
@@ -67,6 +67,10 @@ async function initDB() {
       CREATE INDEX IF NOT EXISTS idx_members_status ON members(status);
       CREATE INDEX IF NOT EXISTS idx_members_batch ON members(batch);
       CREATE INDEX IF NOT EXISTS idx_members_gubae_dept ON members(gubae_department);
+
+      -- Migrate existing columns to TEXT if they were created as VARCHAR
+      ALTER TABLE members ALTER COLUMN photo_url TYPE TEXT;
+      ALTER TABLE members ALTER COLUMN photo_public_id TYPE TEXT;
     `);
     console.log('Database initialized.');
   } finally {

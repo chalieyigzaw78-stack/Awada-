@@ -242,11 +242,40 @@ app.post('/api/members/import', requireAuth(['super_admin', 'admin']), async (re
 
   let imported = 0;
   let failed = 0;
+  let duplicates = 0;
   const errors = [];
 
   for (const m of members) {
     try {
       if (!m.first_name || !m.father_name) { failed++; errors.push(`Row missing ስም/የአባት ስም`); continue; }
+
+      // Check for duplicates — same full name, phone, or email
+      const conditions = [];
+      const params = [];
+
+      params.push(m.first_name.trim(), m.father_name.trim());
+      conditions.push(`(LOWER(TRIM(first_name)) = LOWER($${params.length - 1}) AND LOWER(TRIM(father_name)) = LOWER($${params.length}))`);
+
+      if (m.phone && m.phone.trim()) {
+        params.push(m.phone.trim());
+        conditions.push(`(TRIM(phone) = $${params.length})`);
+      }
+      if (m.email && m.email.trim()) {
+        params.push(m.email.trim().toLowerCase());
+        conditions.push(`(LOWER(TRIM(email)) = $${params.length})`);
+      }
+
+      const dupCheck = await pool.query(
+        `SELECT id, first_name, father_name FROM members WHERE ${conditions.join(' OR ')} LIMIT 1`,
+        params
+      );
+
+      if (dupCheck.rows.length > 0) {
+        duplicates++;
+        const existing = dupCheck.rows[0];
+        errors.push(`ድግግሞሽ: ${m.first_name} ${m.father_name} (already exists as ${existing.first_name} ${existing.father_name})`);
+        continue;
+      }
       await pool.query(`
         INSERT INTO members (
           title, first_name, father_name, grandfather_name, date_of_birth, gender,
@@ -276,7 +305,7 @@ app.post('/api/members/import', requireAuth(['super_admin', 'admin']), async (re
     }
   }
 
-  res.json({ imported, failed, errors });
+  res.json({ imported, failed, duplicates, errors });
 });
 
 app.get('/api/stats', requireAuth(), async (req, res) => {

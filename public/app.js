@@ -481,10 +481,11 @@ async function importFromExcel(file) {
         if (!confirmed) return;
 
         const result = await api('POST', '/api/members/import', { members });
-        const msg = currentLang === 'am'
-          ? `✓ ${result.imported} ተጨምረዋል${result.failed > 0 ? ` — ${result.failed} አልተሳካም` : ''}`
-          : `✓ ${result.imported} imported${result.failed > 0 ? ` — ${result.failed} failed` : ''}`;
-        showToast(msg, result.failed > 0 ? 'error' : 'success');
+        let msg = `✓ ${result.imported} ${currentLang === 'am' ? 'ተጨምረዋል' : 'imported'}`;
+        if (result.duplicates > 0) msg += ` — ${result.duplicates} ${currentLang === 'am' ? 'ድግግሞሽ ተዘሏል' : 'duplicates skipped'}`;
+        if (result.failed > 0) msg += ` — ${result.failed} ${currentLang === 'am' ? 'አልተሳካም' : 'failed'}`;
+        const type = result.imported > 0 ? 'success' : 'error';
+        showToast(msg, type);
         loadMembers(1);
         loadDashboard();
         resolve(result);
